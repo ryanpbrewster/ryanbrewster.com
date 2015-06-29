@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+  </head>
+  <body>
+    <div id='factsDiv'></div>
+    <input type='text' id='factInput' placeholder='Fact goes here'>
+    <script>
+      var myDataRef = new Firebase("https://ryanpbrewster-facts.firebaseio.com/");
+      var factsRef = myDataRef.child("facts");
+      myDataRef.authWithOAuthPopup("facebook", function(error, authData) {
+          if (error) {
+              console.log("Login Failed!", error);
+          } else {
+              console.log("Authenticated successfully with payload:", authData);
+          }
+      });
+      $('#factInput').keypress(function (e) {
+        if (e.keyCode == 13) {
+          var text = $('#factInput').val();
+          factsRef.push({text: text});
+          $('#factInput').val('');
+        }
+      });
+
+      factsRef.on('child_added', function(snapshot) {
+        displayFact(snapshot.val().text);
+      });
+      function displayFact(text) {
+        $('<div/>').text(text).prepend($('<em/>')).appendTo($('#factsDiv'));
+        $('#factsDiv')[0].scrollTop = $('#factsDiv')[0].scrollHeight;
+      };
+    </script>
+  </body>
+</html>
+
