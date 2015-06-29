@@ -20,13 +20,12 @@
           }
       });
 
-      var isNewUser = true;
       myDataRef.onAuth(function(authData) {
-        if (authData && isNewUser) {
+        if (authData) {
           // save the user's profile into Firebase so we can list users,
           // use them in Security and Firebase Rules, and show profiles
-          myDataRef.child("users").child(authData.uid).set({
-            provider: authData.provider,
+          myDataRef.child("users").child(authData.uid).update({
+            provider: authData.provider
           });
         }
       });
@@ -41,6 +40,9 @@
 
       factsRef.on('child_added', function(snapshot) {
         displayFact(snapshot.val().text);
+      });
+      usersRef.on('child_added', function(snapshot) {
+          console.log(snapshot.val());
       });
       function displayFact(text) {
         $('<div/>').text(text).prepend($('<em/>')).appendTo($('#factsDiv'));
