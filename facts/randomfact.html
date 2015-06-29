@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+  </head>
+  <body>
+    <div id='factsDiv'></div>
+    <button id="getRandomFact" onclick="displayRandomFact(this)">Get a random fact!</button>
+    <script>
+      var myDataRef = new Firebase("https://ryanpbrewster-facts.firebaseio.com/");
+      var factsRef = myDataRef.child("facts");
+      var myCount;
+      factsRef.once('value', function(snapshot) { myCount = snapshot.numChildren(); });
+
+      function displayRandomFact(button) {
+          element = document.getElementById("factsDiv");
+          idx = Math.floor(Math.random() * myCount);
+          var i = 0;
+          factsRef.on("child_added", function(snapshot) {
+            snapshot.forEach(function(factSnap) {
+              if (i == idx) {
+                 element.innerHTML = snapshot.val().text;
+              }
+              i += 1;
+            });
+          });
+      };
+    </script>
+  </body>
+</html>
