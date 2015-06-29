@@ -10,13 +10,27 @@
     <script>
       var myDataRef = new Firebase("https://ryanpbrewster-facts.firebaseio.com/");
       var factsRef = myDataRef.child("facts");
+      var usersRef = myDataRef.child("users");
       myDataRef.authWithOAuthPopup("facebook", function(error, authData) {
           if (error) {
               console.log("Login Failed!", error);
           } else {
               console.log("Authenticated successfully with payload:", authData);
+              usersRef.push({uid: authData.uid});
           }
       });
+
+      var isNewUser = true;
+      myDataRef.onAuth(function(authData) {
+        if (authData && isNewUser) {
+          // save the user's profile into Firebase so we can list users,
+          // use them in Security and Firebase Rules, and show profiles
+          myDataRef.child("users").child(authData.uid).set({
+            provider: authData.provider,
+          });
+        }
+      });
+
       $('#factInput').keypress(function (e) {
         if (e.keyCode == 13) {
           var text = $('#factInput').val();
