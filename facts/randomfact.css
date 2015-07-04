@@ -16,6 +16,8 @@
     width: 200px;
     height: 100px;
     text-align: center;
+    border-radius: 10px;
+    outline: none;
 }
 
 #factsContainer {
@@ -23,7 +25,7 @@
     height: 50px;
     vertical-align: middle;
     border: 2px solid #000000;
-    border-radius: 10px 20px 20px 20px;
+    border-radius: 20px;
 }
 
 #factsDiv {
