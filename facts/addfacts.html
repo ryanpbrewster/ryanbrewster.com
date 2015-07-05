@@ -1,28 +1,32 @@
 <!doctype html>
 <html>
   <head>
-    <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
-    <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+    <script src="https://cdn.firebase.com/js/client/2.2.1/firebase.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   </head>
   <body>
-    <div id='factsDiv'></div>
-    <input type='text' id='factInput' placeholder='Fact goes here'>
+    <button id="authenticate" onclick="authenticateUser()">Authenticate</button>
+    <div id="factsDiv"></div>
+    <input type="text" id="factInput" placeholder="Fact goes here">
     <script>
       var myDataRef = new Firebase("https://ryanpbrewster-facts.firebaseio.com/");
       var factsRef = myDataRef.child("facts");
       var usersRef = myDataRef.child("users");
-      myDataRef.authWithOAuthPopup("facebook", function(error, authData) {
+      
+      function authenticateUser() {
+        myDataRef.authWithOAuthPopup("facebook", function(error, authData) {
           if (error) {
-              console.log("Login Failed!", error);
+            console.log("Login Failed!", error);
           } else {
-              console.log("Authenticated successfully with payload:", authData);
-              usersRef.push({uid: authData.uid});
+            console.log("Authenticated successfully with payload:", authData);
+            usersRef.push({uid: authData.uid});
           }
-      });
+        });
+      }
 
       myDataRef.onAuth(function(authData) {
         if (authData) {
-          // save the user's profile into Firebase so we can list users,
+          // save the user"s profile into Firebase so we can list users,
           // use them in Security and Firebase Rules, and show profiles
           myDataRef.child("users").child(authData.uid).update({
             provider: authData.provider
@@ -30,24 +34,41 @@
         }
       });
 
-      $('#factInput').keypress(function (e) {
+      $("#factInput").keypress(function (e) {
         if (e.keyCode == 13) {
-          var text = $('#factInput').val();
-          factsRef.push({text: text});
-          $('#factInput').val('');
+          var text = $("#factInput").val();
+          factsRef.push({text: text, state: "ACTIVE"});
+          $("#factInput").val("");
         }
       });
 
-      factsRef.on('child_added', function(snapshot) {
-        displayFact(snapshot.val().text);
+      factsRef.on("child_added", function(snapshot) {
+        displayFact(snapshot.val().text, snapshot.val().state, snapshot.key())
       });
-      usersRef.on('child_added', function(snapshot) {
+      usersRef.on("child_added", function(snapshot) {
           console.log(snapshot.val());
       });
-      function displayFact(text) {
-        $('<div/>').text(text).prepend($('<em/>')).appendTo($('#factsDiv'));
-        $('#factsDiv')[0].scrollTop = $('#factsDiv')[0].scrollHeight;
+      function displayFact(text, state, key) {
+        var button = "<button onclick='toggleState(\"" + key + "\")'>D</button>" 
+        if( state == "ACTIVE" ) {
+          $("#factsDiv").append("<div id=" + key + " style='color:black'>" + button + " " + text + "</div>");
+        } else {
+          $("#factsDiv").append("<div id=" + key + " style='color:gray'>"  + button + " " + text + "</div>");
+        }
       };
+
+      function toggleState(key) {
+        factsRef.child(key).once("value", function(snapshot) {
+          var current_state = snapshot.val().state
+          if( current_state == "ACTIVE" ) {
+            factsRef.child(key).update({state: "INACTIVE"});
+            document.getElementById(key).style.color = "gray";
+          } else {
+            factsRef.child(key).update({state: "ACTIVE"});
+            document.getElementById(key).style.color = "black";
+          }
+        });
+      }
     </script>
   </body>
 </html>
