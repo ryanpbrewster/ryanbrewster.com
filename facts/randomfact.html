@@ -15,21 +15,21 @@
     <script>
       var myDataRef = new Firebase("https://ryanpbrewster-facts.firebaseio.com/");
       var factsRef = myDataRef.child("facts");
-      var myCount;
-      factsRef.once('value', function(snapshot) { myCount = snapshot.numChildren(); });
 
       function displayRandomFact(button) {
-          element = document.getElementById("factsDiv");
-          idx = Math.floor(Math.random() * myCount);
-          var i = 0;
-          factsRef.on("child_added", function(snapshot) {
-            snapshot.forEach(function(factSnap) {
-              if (i == idx) {
-                 element.innerHTML = snapshot.val().text;
+        var fact = "";
+        var count = 0;
+        factsRef.on("value", function(snapshot) {
+          snapshot.forEach(function(factSnap) {
+            if (factSnap.val().state === "ACTIVE") {
+              count++;
+              if( count === 1 || Math.random() < 1.0/count) {
+                fact = factSnap.val().text;
               }
-              i += 1;
-            });
+            }
           });
+          document.getElementById("factsDiv").innerHTML = fact;
+        });
       };
     </script>
   </body>
